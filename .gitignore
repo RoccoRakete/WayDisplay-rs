@@ -1,0 +1,24 @@
+# Logs
+WayDisplay-rs/WayDisplay-rs/logs
+WayDisplay-rs/*.log
+WayDisplay-rs/npm-debug.log*
+WayDisplay-rs/yarn-debug.log*
+WayDisplay-rs/yarn-error.log*
+WayDisplay-rs/pnpm-debug.log*
+WayDisplay-rs/lerna-debug.log*
+
+WayDisplay-rs/node_modules
+WayDisplay-rs/dist
+WayDisplay-rs/dist-ssr
+WayDisplay-rs/*.local
+
+# Editor directories and files
+WayDisplay-rs/.vscode/*
+WayDisplay-rs/!.vscode/extensions.json
+WayDisplay-rs/.idea
+WayDisplay-rs/.DS_Store
+WayDisplay-rs/*.suo
+WayDisplay-rs/*.ntvs*
+WayDisplay-rs/*.njsproj
+WayDisplay-rs/*.sln
+WayDisplay-rs/*.sw?

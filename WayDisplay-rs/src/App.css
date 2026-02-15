@@ -1,0 +1,369 @@
+/* 1. Reset and dynamic system color mapping */
+:root {
+  /* System-defined colors */
+  --bg-main: Canvas; /* Default background of the OS */
+  --text-main: CanvasText; /* Default text color of the OS */
+  --accent: AccentColor; /* The user's chosen OS accent color */
+  --accent-text: AccentColorText;
+
+  /* Fallbacks for older browsers or specific UI elements */
+  --bg-card: color-mix(in srgb, Canvas, CanvasText 5%);
+  --border-color: color-mix(in srgb, Canvas, CanvasText 15%);
+  --bg-hover: color-mix(in srgb, var(--bg-main), var(--text-main) 10%);
+}
+
+/* Ensure the dark/light scheme is supported */
+html {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Prevent window scrollbars */
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 0px 20px; /* Top/Bottom 0, Left/Right 20 */
+  box-sizing: border-box;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* 2. Header */
+.top-header {
+  text-align: start;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px;
+  min-width: 1200px;
+}
+
+.top-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.highlight-text {
+  color: var(--text-main);
+}
+
+/* 3. Grid */
+.four-col-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  flex: 1;
+  min-height: 400px; /* Critical for inner scrolling */
+  margin-bottom: 10px;
+}
+
+.column-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allows card to be smaller than content */
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.column-card h2 {
+  font-size: 0.8rem;
+  margin-top: 0;
+  text-transform: uppercase;
+  opacity: 0.6;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  letter-spacing: 0.05em;
+}
+
+h3 {
+  font-size: 0.8rem;
+  margin-top: 0;
+  text-transform: uppercase;
+  opacity: 0.6;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* Style for text inputs to match the system theme */
+.system-input {
+  /* egui style padding: 10px vertical, 20px horizontal */
+  padding: 10px 20px;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.system-input:hover {
+  border-color: color-mix(in srgb, var(--border-color), var(--text-main) 20%);
+}
+
+.system-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  /* Subtle glow using the system accent color */
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent), transparent 70%);
+}
+
+/* Placeholder color matching the muted text */
+.system-input::placeholder {
+  color: color-mix(in srgb, var(--text-main), transparent 50%);
+}
+
+/* 4. Lists & Scrollbar Logic */
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto; /* Enable scrolling for long lists */
+  flex: 1; /* Take up remaining space in card */
+  min-width: 200px;
+}
+
+/* Custom Scrollbar Styling (Slim & Native Look) */
+.item-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.item-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.item-list::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
+}
+
+.item-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+
+.item-list li {
+  /* Your preferred egui-style padding: 10px vertical, 20px horizontal */
+  padding: 10px 20px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-list li:hover {
+  background-color: var(--bg-hover);
+}
+
+.item-list li.active {
+  background-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* 5. Controls & Checkboxes */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 10px 15px;
+  background-color: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.checkbox-group label:hover {
+  background-color: color-mix(in srgb, var(--bg-main), var(--text-main) 5%);
+}
+
+.checkbox-group input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-main);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.checkbox-group input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkbox-group input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--accent-text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* 6. Action Column */
+.action-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 300px;
+}
+
+.info-box {
+  background-color: color-mix(in srgb, var(--bg-main), var(--text-main) 5%);
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+  margin-bottom: 15px;
+}
+
+.info-box p {
+  margin: 5px 0;
+}
+
+.command-preview {
+  background-color: color-mix(
+    in srgb,
+    black,
+    var(--text-main) 10%
+  ); /* Darker background for code */
+  color: var(--text-main); /* Command in accent color for contrast */
+  font-family: "Fira Code", "Courier New", monospace;
+  overflow-x: auto;
+}
+
+.command-preview pre {
+  margin: 0;
+  white-space: pre-wrap; /* Allows line breaks */
+  word-break: break-all;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.apply-btn,
+.cpy-btn {
+  /* Your preferred egui-style padding: 10px vertical, 20px horizontal */
+  padding: 10px 20px;
+  background-color: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+
+.apply-btn {
+  /* Your preferred egui-style padding: 10px vertical, 20px horizontal */
+  margin-top: auto; /* Pushes button to the bottom of the card */
+}
+
+.cpy-btn {
+  /* Your preferred egui-style padding: 10px vertical, 20px horizontal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: start;
+  text-decoration: none;
+}
+
+.cpy-btn {
+  /* Your requested egui-style padding (10.0, 20.0) */
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Space between icon and text */
+  margin-bottom: 20px;
+}
+
+.apply-btn:hover,
+.cpy-btn:hover {
+  filter: brightness(1.1);
+}
+
+.apply-btn:active,
+.cpy-btn:active {
+  filter: brightness(0.9);
+}
+
+/* 7. Footer */
+.app-footer {
+  margin-top: auto;
+  padding: 15px 0;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+}
+
+.github-link {
+  margin-right: 15px;
+}
+
+.github-link,
+.bug-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--text-main), transparent 40%);
+  font-size: 0.9rem;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.github-link:hover,
+.bug-link:hover {
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.github-link svg,
+.bug-link svg {
+  display: block;
+}
