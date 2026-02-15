@@ -41,7 +41,6 @@ pub struct Display {
     position: Option<DisplayPosition>,
 }
 
-// NEU: Struct für apply_settings Parameter
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DisplaySettings {
     pub display_name: String,
@@ -51,8 +50,8 @@ pub struct DisplaySettings {
     pub adaptive_sync: bool,
     pub enabled: bool,
     pub scaling: f32,
-    pub pos_x: Option<i32>,
-    pub pos_y: Option<i32>,
+    pub position_relative_to: Option<String>, // Name des Referenz-Monitors
+    pub position_direction: Option<String>,   // "left-of", "right-of", "above", "below"
 }
 
 #[tauri::command]
@@ -110,9 +109,20 @@ pub async fn apply_settings(settings: DisplaySettings) -> Result<String, String>
         .arg("--scale")
         .arg(settings.scaling.to_string());
 
-    // Position hinzufügen, falls vorhanden
-    if let (Some(x), Some(y)) = (settings.pos_x, settings.pos_y) {
-        cmd.arg("--pos").arg(format!("{},{}", x, y));
+    // NEU: Relative Position statt absolute Koordinaten
+    if let (Some(ref_monitor), Some(direction)) =
+        (settings.position_relative_to, settings.position_direction)
+    {
+        let arg = match direction.as_str() {
+            "left-of" => "--left-of",
+            "right-of" => "--right-of",
+            "above" => "--above",
+            "below" => "--below",
+            _ => {
+                return Err(format!("Invalid position direction: {}", direction));
+            }
+        };
+        cmd.arg(arg).arg(&ref_monitor);
     }
 
     if settings.adaptive_sync {

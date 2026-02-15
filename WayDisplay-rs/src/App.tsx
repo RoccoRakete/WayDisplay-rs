@@ -116,13 +116,48 @@ function App() {
   // Builder for the command output
   const generatedCommand = currentDisplay && currentMode
     ? (() => {
-      const SCALE = 0.1;
-      const posX = currentDisplay.position ? Math.round(currentDisplay.position.x / SCALE) : null;
-      const posY = currentDisplay.position ? Math.round(currentDisplay.position.y / SCALE) : null;
-      const posArg = (posX !== null && posY !== null) ? `--pos ${posX},${posY} \\\n  ` : '';
+      let posRelativeTo: string | null = null;
+      let posDirection: string | null = null;
+
+      if (displays.length > 1 && currentDisplay.position) {
+        const otherDisplays = displays.filter(d => d.name !== currentDisplay.name);
+
+        for (const other of otherDisplays) {
+          if (!other.position) continue;
+
+          const deltaX = currentDisplay.position.x - other.position.x;
+          const deltaY = currentDisplay.position.y - other.position.y;
+
+          if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (deltaX > 0) {
+              posRelativeTo = other.name;
+              posDirection = "right-of";
+              break;
+            } else if (deltaX < 0) {
+              posRelativeTo = other.name;
+              posDirection = "left-of";
+              break;
+            }
+          } else {
+            if (deltaY > 0) {
+              posRelativeTo = other.name;
+              posDirection = "below";
+              break;
+            } else if (deltaY < 0) {
+              posRelativeTo = other.name;
+              posDirection = "above";
+              break;
+            }
+          }
+        }
+      }
+
+      const posArg = posRelativeTo && posDirection
+        ? `--${posDirection} ${posRelativeTo} \\\n  `
+        : '';
 
       return `wlr-randr --output ${currentDisplay.name} \\
-  --mode ${currentMode.width}x${currentMode.height}@${currentMode.refresh.toFixed(2)} \\
+  --mode ${currentMode.width}x${currentMode.height}@${currentMode.refresh.toFixed(3)} \\
   --scale ${scaling || "1.0"} \\
   ${posArg}--adaptive-sync ${isAdaptiveSync ? "enabled" : "disabled"} \\
   ${isEnabled ? "--on" : "--off"}`;
@@ -155,9 +190,46 @@ function App() {
     if (!display || !mode) return;
 
     try {
-      const SCALE = 0.15;
-      const posX = display.position ? Math.round(display.position.x / SCALE) : null;
-      const posY = display.position ? Math.round(display.position.y / SCALE) : null;
+      // Berechne relative Position basierend auf dem Drag & Drop Layout
+      let positionRelativeTo: string | null = null;
+      let positionDirection: string | null = null;
+
+      if (displays.length > 1 && display.position) {
+        // Finde den nächsten Monitor basierend auf der Position
+        const otherDisplays = displays.filter(d => d.name !== display.name);
+
+        for (const other of otherDisplays) {
+          if (!other.position) continue;
+
+          const deltaX = display.position.x - other.position.x;
+          const deltaY = display.position.y - other.position.y;
+
+          // Bestimme Richtung basierend auf größtem Delta
+          if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            // Horizontal
+            if (deltaX > 0) {
+              positionRelativeTo = other.name;
+              positionDirection = "right-of";
+              break;
+            } else if (deltaX < 0) {
+              positionRelativeTo = other.name;
+              positionDirection = "left-of";
+              break;
+            }
+          } else {
+            // Vertikal
+            if (deltaY > 0) {
+              positionRelativeTo = other.name;
+              positionDirection = "below";
+              break;
+            } else if (deltaY < 0) {
+              positionRelativeTo = other.name;
+              positionDirection = "above";
+              break;
+            }
+          }
+        }
+      }
 
       const result = await invoke("apply_settings", {
         settings: {
@@ -168,8 +240,8 @@ function App() {
           adaptive_sync: isAdaptiveSync,
           enabled: isEnabled,
           scaling: parseFloat(scaling) || 1.0,
-          pos_x: posX,
-          pos_y: posY,
+          position_relative_to: positionRelativeTo,
+          position_direction: positionDirection,
         }
       });
       console.log(result);
