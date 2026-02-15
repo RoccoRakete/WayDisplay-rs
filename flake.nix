@@ -75,6 +75,12 @@
             export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
             export XDG_DATA_DIRS=${pkgs.gsettings-desktop-schemas}/share/gsettings-data-convert:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}:$XDG_DATA_DIRS
 
+            # NEU: Installiere tauri-cli falls nicht vorhanden
+            if ! command -v tauri &> /dev/null; then
+              echo "Installing tauri-cli..."
+              cargo install tauri-cli --locked
+            fi
+
             echo "Standard environment ready. Try running 'bun run tauri dev' now."
           '';
         };
@@ -87,6 +93,12 @@
             export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath runtimeLibs}:$LD_LIBRARY_PATH
             export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
             export XDG_DATA_DIRS=${pkgs.gsettings-desktop-schemas}/share/gsettings-data-convert:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}:$XDG_DATA_DIRS
+
+            # NEU: Installiere tauri-cli falls nicht vorhanden
+            if ! command -v tauri &> /dev/null; then
+              echo "Installing tauri-cli..."
+              cargo install tauri-cli --locked
+            fi
 
             echo "FHS Environment ready. /usr/bin/xdg-open now exists! Run 'bun run tauri build' to generate the AppImage."
           '';
