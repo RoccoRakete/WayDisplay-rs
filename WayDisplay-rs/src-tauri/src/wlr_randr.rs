@@ -31,7 +31,7 @@ pub struct Display {
     name: String,
     make: String,
     model: String,
-    serial: String,
+    serial: Option<String>,
     enabled: bool,
     adaptive_sync: bool,
     scale: f32,
