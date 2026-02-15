@@ -4,7 +4,6 @@ import { invoke } from "@tauri-apps/api/core";
 import { message } from '@tauri-apps/plugin-dialog';
 import { exit } from '@tauri-apps/plugin-process';
 import "./App.css";
-import { DisplayLayout } from './DisplayLayout';
 
 // Interfaces matching wlr-randr JSON structure
 interface DisplayMode {
@@ -28,10 +27,6 @@ interface Display {
   physical_size: {
     width: number;
     height: number;
-  };
-  position?: {
-    x: number;
-    y: number;
   };
 }
 
@@ -116,50 +111,10 @@ function App() {
   // Builder for the command output
   const generatedCommand = currentDisplay && currentMode
     ? (() => {
-      let posRelativeTo: string | null = null;
-      let posDirection: string | null = null;
-
-      if (displays.length > 1 && currentDisplay.position) {
-        const otherDisplays = displays.filter(d => d.name !== currentDisplay.name);
-
-        for (const other of otherDisplays) {
-          if (!other.position) continue;
-
-          const deltaX = currentDisplay.position.x - other.position.x;
-          const deltaY = currentDisplay.position.y - other.position.y;
-
-          if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            if (deltaX > 0) {
-              posRelativeTo = other.name;
-              posDirection = "right-of";
-              break;
-            } else if (deltaX < 0) {
-              posRelativeTo = other.name;
-              posDirection = "left-of";
-              break;
-            }
-          } else {
-            if (deltaY > 0) {
-              posRelativeTo = other.name;
-              posDirection = "below";
-              break;
-            } else if (deltaY < 0) {
-              posRelativeTo = other.name;
-              posDirection = "above";
-              break;
-            }
-          }
-        }
-      }
-
-      const posArg = posRelativeTo && posDirection
-        ? `--${posDirection} ${posRelativeTo} \\\n  `
-        : '';
 
       return `wlr-randr --output ${currentDisplay.name} \\
-  --mode ${currentMode.width}x${currentMode.height}@${currentMode.refresh.toFixed(3)} \\
-  --scale ${scaling || "1.0"} \\
-  ${posArg}--adaptive-sync ${isAdaptiveSync ? "enabled" : "disabled"} \\
+  --mode ${currentMode.width}x${currentMode.height}@${currentMode.refresh.toFixed(2)} \\
+  --adaptive-sync ${isAdaptiveSync ? "enabled" : "disabled"} \\
   ${isEnabled ? "--on" : "--off"}`;
     })()
     : "Loading command...";
@@ -190,47 +145,6 @@ function App() {
     if (!display || !mode) return;
 
     try {
-      // Berechne relative Position basierend auf dem Drag & Drop Layout
-      let positionRelativeTo: string | null = null;
-      let positionDirection: string | null = null;
-
-      if (displays.length > 1 && display.position) {
-        // Finde den nächsten Monitor basierend auf der Position
-        const otherDisplays = displays.filter(d => d.name !== display.name);
-
-        for (const other of otherDisplays) {
-          if (!other.position) continue;
-
-          const deltaX = display.position.x - other.position.x;
-          const deltaY = display.position.y - other.position.y;
-
-          // Bestimme Richtung basierend auf größtem Delta
-          if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            // Horizontal
-            if (deltaX > 0) {
-              positionRelativeTo = other.name;
-              positionDirection = "right-of";
-              break;
-            } else if (deltaX < 0) {
-              positionRelativeTo = other.name;
-              positionDirection = "left-of";
-              break;
-            }
-          } else {
-            // Vertikal
-            if (deltaY > 0) {
-              positionRelativeTo = other.name;
-              positionDirection = "below";
-              break;
-            } else if (deltaY < 0) {
-              positionRelativeTo = other.name;
-              positionDirection = "above";
-              break;
-            }
-          }
-        }
-      }
-
       const result = await invoke("apply_settings", {
         settings: {
           display_name: display.name,
@@ -240,8 +154,6 @@ function App() {
           adaptive_sync: isAdaptiveSync,
           enabled: isEnabled,
           scaling: parseFloat(scaling) || 1.0,
-          position_relative_to: positionRelativeTo,
-          position_direction: positionDirection,
         }
       });
       console.log(result);
@@ -250,16 +162,6 @@ function App() {
       alert(`Error: ${err}`);
     }
   }
-
-  const handlePositionChange = (displayName: string, x: number, y: number) => {
-    setDisplays(prevDisplays =>
-      prevDisplays.map(d =>
-        d.name === displayName
-          ? { ...d, position: { x, y } }
-          : d
-      )
-    );
-  };
 
   return (
     <main className="main-container">
@@ -334,12 +236,12 @@ function App() {
               value={scaling}
               onChange={(e) => setScaling(e.target.value)}
             />
-            <h3>Layout</h3>
+            {/*<h3>Layout</h3>
             <DisplayLayout
               displays={displays}
               onPositionChange={handlePositionChange}
               selectedDisplayName={currentDisplay?.name}
-            />
+            />*/}
           </div>
         </section>
 

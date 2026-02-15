@@ -21,12 +21,6 @@ struct PhysicalSize {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DisplayPosition {
-    pub x: i32,
-    pub y: i32,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Display {
     name: String,
     make: String,
@@ -37,10 +31,9 @@ pub struct Display {
     scale: f32,
     modes: Vec<DisplayMode>,
     physical_size: PhysicalSize,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    position: Option<DisplayPosition>,
 }
 
+// NEU: Struct für apply_settings Parameter
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DisplaySettings {
     pub display_name: String,
@@ -50,8 +43,6 @@ pub struct DisplaySettings {
     pub adaptive_sync: bool,
     pub enabled: bool,
     pub scaling: f32,
-    pub position_relative_to: Option<String>, // Name des Referenz-Monitors
-    pub position_direction: Option<String>,   // "left-of", "right-of", "above", "below"
 }
 
 #[tauri::command]
@@ -75,18 +66,8 @@ pub async fn get_display_info() -> Result<Vec<Display>, String> {
     if output.status.success() {
         let json_str = String::from_utf8_lossy(&output.stdout);
         // Parse the JSON string into our Rust Vec<Display>
-        let mut displays: Vec<Display> =
+        let displays: Vec<Display> =
             serde_json::from_str(&json_str).map_err(|e| format!("Failed to parse JSON: {}", e))?;
-
-        // Setze initiale Positionen, falls nicht vorhanden
-        for (index, display) in displays.iter_mut().enumerate() {
-            if display.position.is_none() {
-                display.position = Some(DisplayPosition {
-                    x: (index as i32) * 1920, // Standard-Offset
-                    y: 0,
-                });
-            }
-        }
 
         Ok(displays)
     } else {
@@ -108,22 +89,6 @@ pub async fn apply_settings(settings: DisplaySettings) -> Result<String, String>
         .arg(&mode_str)
         .arg("--scale")
         .arg(settings.scaling.to_string());
-
-    // NEU: Relative Position statt absolute Koordinaten
-    if let (Some(ref_monitor), Some(direction)) =
-        (settings.position_relative_to, settings.position_direction)
-    {
-        let arg = match direction.as_str() {
-            "left-of" => "--left-of",
-            "right-of" => "--right-of",
-            "above" => "--above",
-            "below" => "--below",
-            _ => {
-                return Err(format!("Invalid position direction: {}", direction));
-            }
-        };
-        cmd.arg(arg).arg(&ref_monitor);
-    }
 
     if settings.adaptive_sync {
         cmd.arg("--adaptive-sync").arg("enabled");
